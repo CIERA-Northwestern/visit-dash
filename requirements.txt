@@ -1,0 +1,16 @@
+numpy
+pandas
+openpyxl
+matplotlib
+seaborn
+sympy
+nbconvert
+nbformat
+PyYAML
+streamlit
+pytest
+ipython
+jupyter
+jupyterlab
+jupyter_contrib_nbextensions
+root-dash

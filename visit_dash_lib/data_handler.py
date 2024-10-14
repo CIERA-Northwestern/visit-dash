@@ -229,7 +229,7 @@ class DataHandler:
     def filter_data(
         self,
         recategorized_df: pd.DataFrame,
-        categorical_filters: dict[str, list] = {},
+        filters: dict,
     ) -> pd.DataFrame:
         '''Filter what data shows up in the dashboard.
 
@@ -240,9 +240,9 @@ class DataHandler:
         Returns:
             selected_df: The dataframe containing the selected data.
         '''
-
         # Initialized
         is_included = np.ones(len(recategorized_df), dtype=bool)
+        categorical_filters = filters['categorical']
 
         # Categories filter
         for cat_filter_col, selected_cats in categorical_filters.items():

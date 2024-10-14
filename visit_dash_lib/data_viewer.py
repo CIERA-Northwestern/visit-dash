@@ -161,7 +161,7 @@ class DataViewer:
             if sum(list(df[cols])) != 0:
                 is_empty = False
                 break
-
+        
         if not is_empty:
             if df.index.name == 'Reindexed Month':
                 plt.xticks(xs, [calendar.month_abbr[month_reindex[i-1]] for i in xs])
@@ -170,7 +170,7 @@ class DataViewer:
         for j, category_j in enumerate(categories):
 
             ys = df[category_j]
-
+            
             ax.plot(
                 xs,
                 ys,
@@ -182,7 +182,7 @@ class DataViewer:
             ax.scatter(
                 xs,
                 ys,
-                label = category_j,
+                label = "{}".format(category_j),
                 zorder = 2,
                 color = category_colors[category_j],
                 s = marker_size,
@@ -193,7 +193,7 @@ class DataViewer:
                 label_y = ys.iloc[-1]
 
                 text = ax.annotate(
-                    text = category_j,
+                    text = "{}".format(category_j),
                     xy = (1, label_y),
                     xycoords = matplotlib.transforms.blended_transform_factory(ax.transAxes, ax.transData),
                     xytext = (-5 + 10 * (annotations_ha == 'left'), 0),

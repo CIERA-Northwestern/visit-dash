@@ -143,7 +143,7 @@ class DashBuilder:
     def filter_data(
         _self,
         recategorized_df: pd.DataFrame,
-        categorical_filters: dict[str, list] = {},
+        filters: dict,
     ) -> pd.DataFrame:
         '''Filter what data shows up in the dashboard.
 
@@ -161,7 +161,7 @@ class DashBuilder:
         with st.spinner(msg):
             return _self.data_handler.filter_data(
                 recategorized_df=recategorized_df,
-                categorical_filters=categorical_filters,
+                filters=filters,
             )
 
     @st.cache_data

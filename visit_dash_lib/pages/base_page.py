@@ -44,7 +44,7 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
 
     # Global settings
     #st.sidebar.markdown('# Data Settings')
-    setting_check, toggle = builder.interface.request_data_settings(st.sidebar)
+    setting_check, toggle_total = builder.interface.request_data_settings(st.sidebar)
 
     st.sidebar.markdown('# View Settings')
     builder.interface.request_view_settings(st.sidebar)
@@ -69,27 +69,27 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
     # entered search category passed down to filter settings for further specification
     st.subheader('Data Axes')
     axes_object = builder.interface.request_data_axes(st, max_year, min_year)
-    if axes_object['groupby_column'] == 'Origin(International/Domestic)':
+    if axes_object['groupby_column'] == 'Origin (International/Domestic)':
         builder.settings.common['data']['groupby_column'] = 'International'
-    print(axes_object)
-    # catches specified groupby category
-    category_specific = builder.settings.get_settings(common_to_include=['data'])
-
     
     # filters data as per specs
     builder.interface.process_filter_settings(
         st,
         data['recategorized'],
-        value=category_specific['groupby_column']
+        value=builder.settings.get_settings(common_to_include=['data'])['groupby_column'],
     )
 
     # Apply data filters
     data['selected'] = builder.filter_data(
         data['recategorized'],
-        builder.settings.common['filters']['categorical'],
+        builder.settings.common['filters'],
     )
-
     
+    
+    if 'Visitor Institution:' in axes_object['groupby_column']:
+        builder.settings.common['data']['groupby_column'] = 'Visitor Institution'
+    if 'Host:' in axes_object['groupby_column']:
+        builder.settings.common['data']['groupby_column']= 'Host'
     
     # filters data by year bounds selected (so that only entries which fall into this year-bound are displayed)
     reverse_month_dict = {1:'January', 2:'February', 3:'March', 4:'April', 5:'May',6:'June', 7:'July', 8:'August', 9:'September', 10:'October', 11:'November', 12:'December'}
@@ -171,9 +171,10 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         data['totals'] = data['totals'].T
     
     # adds NaN values to dataframe for viewing
-    for topic in builder.settings.common['filters']['categorical'][category_specific['groupby_column']]:
-        if topic not in data['aggregated'].columns:
-            data['aggregated'][topic] = [0 for i in range(len(data['aggregated'].index))]
+    if 'categorical' in builder.settings.common['filters']:
+        for topic in builder.settings.common['filters']['categorical'][builder.settings.get_settings(common_to_include=['data'])['groupby_column']]:
+            if topic not in data['aggregated'].columns:
+                data['aggregated'][topic] = [0 for i in range(len(data['aggregated'].index))]
 
     # Lineplot
     local_key = 'lineplot'
@@ -198,7 +199,7 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         )
 
     #constructs line plot with or without the 'total' line, depending on if relevant feature has been toggled
-    if toggle:
+    if toggle_total:
         builder.data_viewer.lineplot(
             df = data['aggregated'],
             month_reindex = month_redef if builder.settings.common['data']['x_column_ind'] == 0 else None, 

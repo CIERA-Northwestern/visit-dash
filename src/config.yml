@@ -34,7 +34,7 @@ combined_filename: press.csv
 # If you add additional categorical columns to the data, you can specify them here and they will be added to the dashboard.
 groupings:
   - Host Type
-  - Origin(International/Domestic)
+  - Programs
 
 ## Column Classifications
 # The anything that's in a given grouping can be analyzed similarly.
@@ -48,14 +48,16 @@ numerical_columns: # Numeric columns that can be summed
 date_columns: # Dates
   - Date
 x_columns: # Data will be binned by these along the x-axis
-  - Year(Flexible) # For example, a value of 2019 would be grouped into the 2019-2020 financial year
-  - Adm
+  - Year (Flexible) # For example, a value of 2019 would be grouped into the 2019-2020 financial year
 categorical_columns: # Categorical columns that can be grouped, e.g. all Press Types=="Science" articles
   - Host Type
-  - Origin(International/Domestic)
+  - Origin (International/Domestic)
+  - Programs
+  - Visitor Institution
+  - Host
+  
 text_columns: # Text columns that can be searched
   - id
-  - Host
 
 ## Custom Categories
 # Use boolean logic to define categories.

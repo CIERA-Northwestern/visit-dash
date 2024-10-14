@@ -92,8 +92,8 @@ class Interface:
                 index = display_defaults.get(key + '_ind', 0),
             )
             
-            if value == 'Year(Flexible)':
-                month_dict = {'January(Calendar Year)':1, 'February':2, 'March':3,'April(Reporting Year)':4,'May':5,'June':6,'July':7,'August':8,'September(Fiscal Year)':9,'October':10,'November':11,'December':12}
+            if value == 'Year (Flexible)':
+                month_dict = {'January (Calendar Year)':1, 'February':2, 'March':3,'April (Reporting Year)':4,'May':5,'June':6,'July':7,'August':8,'September (Fiscal Year)':9,'October':10,'November':11,'December':12}
                 col1, col2 = st_loc.columns(2)
                 with col1:
                     value_month, ind_month = selectbox(
@@ -143,7 +143,14 @@ class Interface:
                 options=display_options.get('groupby_column', self.config['categorical_columns']),
                 index=display_defaults.get(key + '_ind', 0),
             )
-            
+            if (value == 'Visitor Institution') or (value == 'Host'):
+                value1, ind1 = selectbox(
+                    st_loc,
+                    'How do you want to sort the data?',
+                    options=['Volume of Output, descending order', 'Volume of Output, ascending order'],   
+                )
+                value = value + ":" + value1
+
         selected_settings[key] = value
         selected_settings[key + '_ind'] = ind
 
@@ -225,7 +232,7 @@ class Interface:
             self,
             st_loc,
             df: pd.DataFrame,
-            ask_for: list[str] = ['text', 'categorical', 'numerical'],
+            ask_for: list[str] = ['categorical', 'numerical'],
             local_key: str = None,
             display_defaults: dict = {},
             value: str = None,
@@ -246,7 +253,7 @@ class Interface:
         Returns:
             selected_settings: Current values in the dictionary the settings are stored in.
         '''
-
+    
         # Update the display defaults with any values that exist in the settings
         settings_dict = self.settings.get_settings(
             local_key=local_key,
@@ -254,7 +261,7 @@ class Interface:
         )
         display_defaults.update(settings_dict)
 
-
+        
         if selected_settings is None:
             selected_settings = self.settings.common['filters']
 
@@ -263,9 +270,10 @@ class Interface:
             tag = ''
         else:
             tag += ':'
+
         
-        key = 'categorical'
-        if key in ask_for:
+        if value in df.columns:
+            key = 'categorical'
             current = selected_settings.setdefault(key, {})
             key=tag + key
             
@@ -281,7 +289,21 @@ class Interface:
                 default=default,
                 key=tag + key + ':' + value
             )
-                
+        else:
+            key = tag + 'categorical'
+            selected_settings.setdefault(key, {})
+            value_seperated = value.split(':')
+            is_ascending = False
+            if 'ascending' in value_seperated[1]:
+                is_ascending = True
+            df_count = df.value_counts(value_seperated[0], ascending=is_ascending)
+
+            ### REMINDER - MAKEUPPERlimitUSERSPECIFIED
+            count = st_loc.slider("how many {}s do you want to display?".format(value_seperated[0]), 1, 50, 5)
+            
+            contributers_list = [df_count.index[i] for i in range(count)]
+            selected_settings[key][value_seperated[0]] = contributers_list
+
         return selected_settings
 
     def request_view_settings(

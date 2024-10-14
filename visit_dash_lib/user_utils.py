@@ -6,6 +6,7 @@ import os
 import glob
 import numpy as np
 import pandas as pd
+import datetime
 
 from visit_dash_lib import utils
 
@@ -62,7 +63,7 @@ def load_data(config):
 
     # Website data
     #os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    website_df = pd.read_csv(data_fp, parse_dates=['Start Date',], encoding_errors='ignore')
+    website_df = pd.read_csv(data_fp, encoding_errors='ignore')
     #website_df['id'] = website_df.index
     website_df.set_index(np.arange(len(website_df)), inplace=True)
     #website_df.set_index('Calendar Group', inplace=True)
@@ -101,34 +102,37 @@ def clean_data(raw_df, config):
         config (dict): The (possibly altered) configuration dictionary.
     '''
 
-    for str_columns in ['Start Date', 'End Date']:
-        raw_df[str_columns] = pd.to_datetime(raw_df[str_columns], errors='coerce')
-
+    #for str_columns in ['Start Date', 'End Date']:
+    #    raw_df[str_columns] = pd.to_datetime(raw_df[str_columns], errors='coerce')
+    
     # Drop rows where 'Date' year is 1970
-    cleaned_df = raw_df[raw_df['Start Date'].dt.year != 1970]
-    cleaned_df = raw_df[raw_df['End Date'].dt.year != 1970]
-
+    cleaned_df = raw_df[raw_df['Unix Start Date'] != 0]
+    cleaned_df = raw_df[raw_df['Unix End Date'] != 0]
+ 
     # # Drop drafts
     # cleaned_df = raw_df.drop(
     #     raw_df.index[raw_df['Date'].dt.year == 1970],
     #     axis='rows',
     # )
 
-    
-
     # Drop weird articles---ancient ones w/o a title or year
     cleaned_df.dropna(
         axis='rows',
         how='any',
-        subset=['Start Date(Unix)', 'End Date(Unix)','Visitor Institution', 'Name'],  
+        subset=['Visitor Institution', 'Name', 'Unix Start Date', 'Unix End Date'],  
         inplace=True,
     )
     
-    #Calendar Group,Event Type Tags,id,Title,Category,Research Topic,Date,Attendance,Location,Year
+    cleaned_df['Start Date'] = cleaned_df['Unix Start Date'].apply(datetime.datetime.fromtimestamp)
+    cleaned_df['End Date'] = cleaned_df['Unix End Date'].apply(datetime.datetime.fromtimestamp)
+
+    # programmatically determines duration of visit by comparing unixtimestamps
+    cleaned_df['Visiting Days'] = ((cleaned_df['Unix End Date'] - cleaned_df['Unix Start Date'])/86400)
 
     # Get rid of HTML ampersands
     for str_column in ['Visitor Institution',]:
         cleaned_df[str_column] = cleaned_df[str_column].str.replace('&amp;', '&')
+
 
     # Handle NaNs, rounding, and other numerical errors
     columns_to_fill = ['Visiting Days',]
@@ -163,8 +167,6 @@ def preprocess_data(cleaned_df, config):
     #preprocessed_df['Fiscal Year'] = utils.get_year(
     #    preprocessed_df['Date'], config['start_of_year']
     #)
-    
-    preprocessed_df['Calendar Year'] = preprocessed_df['Start Date'].dt.year
 
     # Tweaks to the press data
     #if 'Title (optional)' in preprocessed_df.columns:
@@ -172,10 +174,10 @@ def preprocess_data(cleaned_df, config):
     #for column in ['Year']:
     #    preprocessed_df[column] = preprocessed_df[column].astype('Int64')    
 
-    # Now explode the data
-    #for group_by_i in config['groupings']:
-    #    preprocessed_df[group_by_i] = preprocessed_df[group_by_i].str.split('|')
-    #    preprocessed_df = preprocessed_df.explode(group_by_i)
+    #Now explode the data
+    for group_by_i in config['groupings']:
+        preprocessed_df[group_by_i] = preprocessed_df[group_by_i].str.split('|')
+        preprocessed_df = preprocessed_df.explode(group_by_i)
 
     # Exploding the data results in duplicate IDs,
     # so let's set up some new, unique IDs.

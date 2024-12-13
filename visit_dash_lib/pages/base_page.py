@@ -176,6 +176,15 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
             if topic not in data['aggregated'].columns:
                 data['aggregated'][topic] = [0 for i in range(len(data['aggregated'].index))]
 
+        
+
+        # little subroutine to default cumulative to true when viewing visitor institutions or hosts
+        if ((builder.settings.get_settings(common_to_include=['data'])['groupby_column'] == "Visitor Institution") or
+        (builder.settings.get_settings(common_to_include=['data'])['groupby_column'] == "Host")):
+            builder.settings.common['data']['cumulative'] = True
+            toggle_total = False;
+    
+
     # Lineplot
     local_key = 'lineplot'
     st.header(config.get('lineplot_header', 'Lineplot'))

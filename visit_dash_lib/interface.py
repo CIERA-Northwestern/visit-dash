@@ -184,11 +184,11 @@ class Interface:
             local_key=local_key,
             common_to_include=['data',]
         )
+        
         display_defaults.update(settings_dict)
 
         if selected_settings is None:
             selected_settings = self.settings.common['data']
-
 
         toggled_on = st_loc.toggle(
             label='show total',
@@ -202,7 +202,7 @@ class Interface:
             tag = ''
         else:
             tag += ':'
-        
+
         key = 'cumulative'
         if key in ask_for:
             selected_settings[key] = st_loc.checkbox(
@@ -271,7 +271,6 @@ class Interface:
         else:
             tag += ':'
 
-        
         if value in df.columns:
             key = 'categorical'
             current = selected_settings.setdefault(key, {})
@@ -289,7 +288,7 @@ class Interface:
                 default=default,
                 key=tag + key + ':' + value
             )
-        else:
+        elif (("Visitor Institution:" in value) or ("Host:" in value)):
             key = tag + 'categorical'
             selected_settings.setdefault(key, {})
             value_seperated = value.split(':')
@@ -299,7 +298,7 @@ class Interface:
             df_count = df.value_counts(value_seperated[0], ascending=is_ascending)
 
             ### REMINDER - MAKEUPPERlimitUSERSPECIFIED
-            count = st_loc.slider("how many {}s do you want to display?".format(value_seperated[0]), 1, 50, 5)
+            count = st_loc.slider("how many {}s do you want to display?".format(value_seperated[0]), 1, 30, 5)
             
             contributers_list = [df_count.index[i] for i in range(count)]
             selected_settings[key][value_seperated[0]] = contributers_list

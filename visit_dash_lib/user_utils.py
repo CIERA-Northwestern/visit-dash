@@ -191,7 +191,7 @@ def preprocess_data(cleaned_df, config):
         else:
             return 'Domestic'
         
-    preprocessed_df['International'] = preprocessed_df['International'].apply(nameify)
+    preprocessed_df['International'] = preprocessed_df['ciera_visit_international'].apply(nameify)
     ## SHOULD remove any spaces before or after categories; allowing a bit more flexibility in data entry
     #for group_by_i in config['groupings']:
     #    preprocessed_df[group_by_i] = preprocessed_df[group_by_i].str.strip()

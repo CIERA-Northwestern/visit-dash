@@ -106,8 +106,8 @@ def clean_data(raw_df, config):
     #    raw_df[str_columns] = pd.to_datetime(raw_df[str_columns], errors='coerce')
     
     # Drop rows where 'Date' year is 1970
-    cleaned_df = raw_df[raw_df['Unix Start Date'] != 0]
-    cleaned_df = raw_df[raw_df['Unix End Date'] != 0]
+    cleaned_df = raw_df[raw_df['Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))'] != 0]
+    cleaned_df = raw_df[raw_df['End Date (UnixTimestamp)'] != 0]
  
     # # Drop drafts
     # cleaned_df = raw_df.drop(
@@ -119,15 +119,15 @@ def clean_data(raw_df, config):
     cleaned_df.dropna(
         axis='rows',
         how='any',
-        subset=['Visitor Institution', 'Name', 'Unix Start Date', 'Unix End Date'],  
+        subset=['Visitor Institution', 'Name', 'Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))', 'End Date (UnixTimestamp)'],  
         inplace=True,
     )
     
-    cleaned_df['Start Date'] = cleaned_df['Unix Start Date'].apply(datetime.datetime.fromtimestamp)
-    cleaned_df['End Date'] = cleaned_df['Unix End Date'].apply(datetime.datetime.fromtimestamp)
+    cleaned_df['Start Date'] = cleaned_df['Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))'].apply(datetime.datetime.fromtimestamp)
+    cleaned_df['End Date'] = cleaned_df['End Date (UnixTimestamp)'].apply(datetime.datetime.fromtimestamp)
 
     # programmatically determines duration of visit by comparing unixtimestamps
-    cleaned_df['Visiting Days'] = ((cleaned_df['Unix End Date'] - cleaned_df['Unix Start Date'])/86400)
+    cleaned_df['Visiting Days'] = ((cleaned_df['End Date (UnixTimestamp)'] - cleaned_df['Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))'])/86400)
 
     # Get rid of HTML ampersands
     for str_column in ['Visitor Institution',]:

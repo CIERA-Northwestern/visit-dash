@@ -106,15 +106,10 @@ def clean_data(raw_df, config):
     #    raw_df[str_columns] = pd.to_datetime(raw_df[str_columns], errors='coerce')
     
     # Drop rows where 'Date' year is 1970
+
     cleaned_df = raw_df[raw_df['Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))'] != 0]
     cleaned_df = raw_df[raw_df['End Date (UnixTimestamp)'] != 0]
- 
-    # # Drop drafts
-    # cleaned_df = raw_df.drop(
-    #     raw_df.index[raw_df['Date'].dt.year == 1970],
-    #     axis='rows',
-    # )
-
+    
     # Drop weird articles---ancient ones w/o a title or year
     cleaned_df.dropna(
         axis='rows',
@@ -122,9 +117,16 @@ def clean_data(raw_df, config):
         subset=['Visitor Institution', 'Name', 'Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))', 'End Date (UnixTimestamp)'],  
         inplace=True,
     )
-    
+    # # Drop drafts
+    # cleaned_df = raw_df.drop(
+    #     raw_df.index[raw_df['Date'].dt.year == 1970],
+    #     axis='rows',
+    # )
     cleaned_df['Start Date'] = cleaned_df['Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))'].apply(datetime.datetime.fromtimestamp)
     cleaned_df['End Date'] = cleaned_df['End Date (UnixTimestamp)'].apply(datetime.datetime.fromtimestamp)
+
+    
+    
 
     # programmatically determines duration of visit by comparing unixtimestamps
     cleaned_df['Visiting Days'] = ((cleaned_df['End Date (UnixTimestamp)'] - cleaned_df['Start Date (UnixTimestamp -- date=(((UnixTimeStamp/60)/60)/24)+DATE(1970,1,1))'])/86400)

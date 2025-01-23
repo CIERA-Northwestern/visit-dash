@@ -41,7 +41,6 @@ groupings:
 primary_id_column: index
 id_columns: # Unique identifiers
   - id
-  - Visitor Institution
   - Name
 numerical_columns: # Numeric columns that can be summed
   - Visiting Days
@@ -63,6 +62,7 @@ text_columns: # Text columns that can be searched
 # Use boolean logic to define categories.
 # In addition to boolean logic, preceeding the definition with 'only' will restrict the category to only the tags that show up in the proceeding definition.
 # Any categories not defined here will be left as is if they are the sole tag, or added to an 'Other' category if they are one of multiple tags.
+
 new_categories:
    # Research topics are defined as falling into one of three main categories: Exploding & Dead Stars, Astrophysical Populations, and Exoplanets & the Solar System.
   Event Type Tags:

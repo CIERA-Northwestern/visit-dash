@@ -100,7 +100,8 @@ class DashBuilder:
             data['preprocessed'], config = _self.data_handler.preprocess_data(data['cleaned'], config)
 
             return data, config
- 
+
+    '''
     @st.cache_data
     def recategorize_data(
             _self,
@@ -109,7 +110,7 @@ class DashBuilder:
             recategorize: bool = True,
             combine_single_categories: bool = False,
         ) -> pd.DataFrame:
-        '''Recategorize the data, i.e. combine existing categories into new ones.
+        Recategorize the data, i.e. combine existing categories into new ones.
         The end result is one category per article, so no articles are double-counted.
         However, if the new categories are ill-defined they can contradict one another
         and lead to inconsistencies.
@@ -128,7 +129,7 @@ class DashBuilder:
         Returns:
             recategorized: The dataframe containing the recategorized data.
                 One entry per article.
-        '''
+        
         msg = 'Recategorizing data...'
         print(msg)
         with st.spinner(msg):
@@ -138,11 +139,12 @@ class DashBuilder:
                 recategorize=recategorize,
                 combine_single_categories=combine_single_categories,
             )
+    '''
 
     @st.cache_data
     def filter_data(
         _self,
-        recategorized_df: pd.DataFrame,
+        preprocessed_df: pd.DataFrame,
         filters: dict,
     ) -> pd.DataFrame:
         '''Filter what data shows up in the dashboard.
@@ -160,7 +162,7 @@ class DashBuilder:
         print(msg)
         with st.spinner(msg):
             return _self.data_handler.filter_data(
-                recategorized_df=recategorized_df,
+                preprocessed_df=preprocessed_df,
                 filters=filters,
             )
 

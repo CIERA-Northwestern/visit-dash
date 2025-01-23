@@ -190,9 +190,12 @@ class Interface:
         if selected_settings is None:
             selected_settings = self.settings.common['data']
 
-        toggled_on = st_loc.toggle(
-            label='show total',
-            value=True,
+        options = ['None', 'Totals', 'Aggregated']
+        data_option = st_loc.segmented_control(
+            'Data Options',
+            options,
+            selection_mode="single",
+            default = "Totals",
         )
 
         st_loc.markdown('# Data Settings')
@@ -210,7 +213,7 @@ class Interface:
                 value=display_defaults.get(key, False),
                 key=tag + key
             )
-        key = 'recategorize'
+        '''key = 'recategorize'
         if key in ask_for:
             selected_settings[key] = st_loc.checkbox(
                 'use combined categories (avoids double-counting entries)',
@@ -224,9 +227,9 @@ class Interface:
                         'group all undefined categories as "Other"',
                         value=display_defaults.get(key, False),
                         key=tag + key
-                    )
+                    )'''
 
-        return selected_settings, toggled_on
+        return selected_settings, data_option
 
     def process_filter_settings(
             self,
@@ -288,6 +291,9 @@ class Interface:
                 default=default,
                 key=tag + key + ':' + value
             )
+        
+        # if visitor institutions or host is selected as count, we sum over the entire visits dataframe and output the top x many
+        # (by metric selected) as a lineplot
         elif (("Visitor Institution:" in value) or ("Host:" in value)):
             key = tag + 'categorical'
             selected_settings.setdefault(key, {})
@@ -299,10 +305,9 @@ class Interface:
 
             ### REMINDER - MAKEUPPERlimitUSERSPECIFIED
             count = st_loc.slider("how many {}s do you want to display?".format(value_seperated[0]), 1, 30, 5)
-            
+ 
             contributers_list = [df_count.index[i] for i in range(count)]
             selected_settings[key][value_seperated[0]] = contributers_list
-
         return selected_settings
 
     def request_view_settings(

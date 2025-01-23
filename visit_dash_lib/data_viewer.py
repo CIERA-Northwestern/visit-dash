@@ -266,6 +266,28 @@ class DataViewer:
         st.write(fig)
 
         return fig
+    
+    def barplot(
+        self,
+        df: pd.DataFrame,
+        x_label: str = None,
+        y_label: str = None,
+        categories: list[str] = None,
+        
+    ):
+        '''
+        palette = sns.color_palette(palette='tab10', n_colors=len(df))
+        color_set = []
+        print(len(df))
+        for i in palette:
+            color_tuple = (int(i[0]*255), int(i[1]*255), int(i[2]*255))
+            color_set.append("#%02x%02x%02x" % color_tuple)
+        print(color_set)
+        print(len(color_set))
+        '''
+        print(df.index) 
+        st.bar_chart(df, y='Aggregate', x_label=x_label, y_label=y_label, color="Aggregate")
+
 
     def stackplot(
         self,

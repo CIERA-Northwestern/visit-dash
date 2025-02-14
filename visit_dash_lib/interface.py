@@ -2,6 +2,7 @@
 '''
 import copy
 import os
+import sys
 from typing import Union, Tuple
 import warnings
 
@@ -87,7 +88,7 @@ class Interface:
         if key in ask_for:
             value, ind = selectbox(
                 st_loc,
-                'How do you want to bin the data in time?',
+                'How do you want to time-wise bin data?',
                 options = display_options.get('x_column', self.config['x_columns']),
                 index = display_defaults.get(key + '_ind', 0),
             )
@@ -147,7 +148,7 @@ class Interface:
                 value1, ind1 = selectbox(
                     st_loc,
                     'How do you want to sort the data?',
-                    options=['Volume of Output, descending order', 'Volume of Output, ascending order'],   
+                    options=['descending order', 'ascending order', 'All'],   
                 )
                 value = value + ":" + value1
 
@@ -189,22 +190,37 @@ class Interface:
 
         if selected_settings is None:
             selected_settings = self.settings.common['data']
-
-        options = ['None', 'Totals', 'Aggregated']
-        data_option = st_loc.segmented_control(
-            'Data Options',
-            options,
-            selection_mode="single",
-            default = "Totals",
-        )
-
-        st_loc.markdown('# Data Settings')
-
+        
         # Setup the tag
         if tag is None:
             tag = ''
         else:
             tag += ':'
+        
+        key = 'data_options'
+        options = ['No Total', 'Only Total', 'Standard', 'Year Aggregate']
+        selected_settings[key] = st_loc.radio(
+            'Data Options',
+            options,
+            index = 2,
+            key = tag+key
+        )
+
+        
+
+        # additional time classification settings
+        # see "LEGACY" classification in user_utils
+        key = 'time_window'
+        st_loc.markdown("# Time Settings")
+        selected_settings[key] = st_loc.radio("How do you want to bound data in time?", 
+                               ["Legacy", "Current", "Both"], 
+                               index=2,
+                               key=tag+key
+                               )
+
+        st_loc.markdown('# Data Settings')
+
+
 
         key = 'cumulative'
         if key in ask_for:
@@ -229,7 +245,7 @@ class Interface:
                         key=tag + key
                     )'''
 
-        return selected_settings, data_option
+        return selected_settings
 
     def process_filter_settings(
             self,
@@ -263,11 +279,10 @@ class Interface:
             common_to_include=['filters',]
         )
         display_defaults.update(settings_dict)
-
         
         if selected_settings is None:
             selected_settings = self.settings.common['filters']
-
+        
         # Setup the tag
         if tag is None:
             tag = ''
@@ -304,9 +319,13 @@ class Interface:
             df_count = df.value_counts(value_seperated[0], ascending=is_ascending)
 
             ### REMINDER - MAKEUPPERlimitUSERSPECIFIED
-            count = st_loc.slider("how many {}s do you want to display?".format(value_seperated[0]), 1, 30, 5)
- 
-            contributers_list = [df_count.index[i] for i in range(count)]
+            if 'All' in value_seperated[1]:
+                contributers_list = [df_count.index[i] for i in range(len(df_count))]
+                self.settings.common['data']['data_options'] = "Only Total"
+            else:
+                count = st_loc.slider("how many {}s do you want to display?".format(value_seperated[0]), 1, 30, 5)
+                contributers_list = [df_count.index[i] for i in range(count)]
+
             selected_settings[key][value_seperated[0]] = contributers_list
         return selected_settings
 

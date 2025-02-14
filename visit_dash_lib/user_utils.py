@@ -176,6 +176,8 @@ def preprocess_data(cleaned_df, config):
     #for column in ['Year']:
     #    preprocessed_df[column] = preprocessed_df[column].astype('Int64')    
 
+
+
     #Now explode the data
     for group_by_i in config['groupings']:
         preprocessed_df[group_by_i] = preprocessed_df[group_by_i].str.split('|')
@@ -185,6 +187,16 @@ def preprocess_data(cleaned_df, config):
     # so let's set up some new, unique IDs.
     #preprocessed_df['id'] = preprocessed_df.index
     preprocessed_df.set_index(np.arange(len(preprocessed_df)), inplace=True)
+
+    # flags all data that has end date of pre-Jan 1st, 2014 as "LEGACY" - 
+    #  @ request of Kari
+    def legacy(date):
+        if date.year < 2014:
+            return "LEGACY"
+        else:
+            return "CURRENT"
+    
+    preprocessed_df['Legacy'] = preprocessed_df['End Date'].apply(legacy)
 
     #converts international boolean into text
     def nameify(is_int):

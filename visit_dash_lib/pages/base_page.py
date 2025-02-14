@@ -44,8 +44,7 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
 
     # Global settings
     #st.sidebar.markdown('# Data Settings')
-    setting_check, data_option = builder.interface.request_data_settings(st.sidebar)
-    
+    setting_check = builder.interface.request_data_settings(st.sidebar)
 
     st.sidebar.markdown('# View Settings')
     builder.interface.request_view_settings(st.sidebar)
@@ -66,13 +65,30 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         ),
     )'''
 
+
+    # bounds years by the window we defined in the view settings
+    window = builder.settings.common['data']['time_window']
+    #print(window)
+    if window == "Legacy":
+        data['preprocessed'] = data['preprocessed'][data['preprocessed']['Legacy'] == "LEGACY"]
+    elif window == "Current":
+        data['preprocessed'] = data['preprocessed'][data['preprocessed']['Legacy'] == "CURRENT"]
+    else: 
+        pass
+
     # for future reference, if you want to set artificial bounds for year/timescale, do it here
     min_year = data['preprocessed']['Start Date'].dt.year.min()
     max_year = data['preprocessed']['Start Date'].dt.year.max()
-
+    
+    
+   
     # Data axes
     # entered search category passed down to filter settings for further specification
     st.subheader('Data Axes')
+    
+    st.text("Note: entries from before Jan 1st, 2014 are classified as LEGACY for the purposes of data categorization")
+    st.text("LEGACY classification carries different connotations... TO ASK ABOUT")
+
     axes_object = builder.interface.request_data_axes(st, max_year, min_year)
     if axes_object['groupby_column'] == 'Origin (International/Domestic)':
         builder.settings.common['data']['groupby_column'] = 'International'
@@ -90,10 +106,17 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         builder.settings.common['filters'],
     )
     
+    ## this is a fun tool that will help us later
+    # its to improve performance dont worry about it
+    defragment = False
+    if axes_object['groupby_column'] == "Visitor Institution:All":
+        defragment = True
+
     if 'Visitor Institution:' in axes_object['groupby_column']:
         builder.settings.common['data']['groupby_column'] = 'Visitor Institution'
     if 'Host:' in axes_object['groupby_column']:
         builder.settings.common['data']['groupby_column']= 'Host'
+    
     
     # filters data by year bounds selected (so that only entries which fall into this year-bound are displayed)
     reverse_month_dict = {1:'January', 2:'February', 3:'March', 4:'April', 5:'May',6:'June', 7:'July', 8:'August', 9:'September', 10:'October', 11:'November', 12:'December'}
@@ -133,14 +156,7 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         data['time_adjusted'] = data['selected']
         builder.settings.common['data']['x_column'] = 'Calendar Year'
 
-    # Aggregate data
-    data['aggregated'] = builder.aggregate(
-        data['time_adjusted'],
-        builder.settings.common['data']['x_column'],
-        builder.settings.common['data']['y_column'],
-        builder.settings.common['data']['groupby_column'],
-        builder.settings.common['data']['aggregation_method'],
-    )
+   
 
     # Aggregate data
     data['totals'] = builder.aggregate(
@@ -149,9 +165,18 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         builder.settings.common['data']['y_column'],
         aggregation_method=builder.settings.common['data']['aggregation_method'],
     )
-
+     # Aggregate data
+     
+    data['aggregated'] = builder.aggregate(
+            data['time_adjusted'],
+            builder.settings.common['data']['x_column'],
+            builder.settings.common['data']['y_column'],
+            builder.settings.common['data']['groupby_column'],
+            builder.settings.common['data']['aggregation_method'],
+    )
     ### WORKING ON IT
-    print(builder.settings.common['data'])
+    
+    #print(builder.settings.common['data'])
     temp = data['aggregated'].sum()
     data['total_by_instance'] = pd.DataFrame(index = temp.index, data={'Aggregate': temp.values})
     data['total_by_instance'].sort_values(ascending=False, by='Aggregate', inplace=True)
@@ -180,10 +205,11 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
         data['totals'] = data['totals'].T
     
     # adds NaN values to dataframe for viewing
-    if 'categorical' in builder.settings.common['filters']:
-        for topic in builder.settings.common['filters']['categorical'][builder.settings.get_settings(common_to_include=['data'])['groupby_column']]:
-            if topic not in data['aggregated'].columns:
-                data['aggregated'][topic] = [0 for i in range(len(data['aggregated'].index))]
+    if not defragment:
+        if 'categorical' in builder.settings.common['filters']:
+            for topic in builder.settings.common['filters']['categorical'][builder.settings.get_settings(common_to_include=['data'])['groupby_column']]:
+                if topic not in data['aggregated'].columns:
+                    data['aggregated'][topic] = [0 for i in range(len(data['aggregated'].index))]
 
         
 
@@ -194,7 +220,7 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
             
 
     
-
+    print(builder.settings.common['data'])
 
     st.header('Data Plotting')
     st.text("Note: data entries may correspond to multiple categories, and so be represented in each grouping")
@@ -202,7 +228,8 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
 
 
     # Lineplot IF data option is total or none
-    if data_option != "Aggregated":
+    data_option = builder.settings.common['data']['data_options']
+    if data_option != "Year Aggregate":
         local_key = 'lineplot'
         st.subheader('Line Plot Visualization')        
         with st.expander('Lineplot settings'):
@@ -223,15 +250,22 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
                 local_key=local_key,
             )
 
-    #constructs line plot with or without the 'total' line, depending on if relevant feature has been toggled
-        if data_option == "None":
+    #constructs line plot based on specifications provided
+        if data_option == "No Total":
             builder.data_viewer.lineplot(
                     df = data['aggregated'],
                     month_reindex = month_redef if builder.settings.common['data']['x_column_ind'] == 0 else None, 
                     year_reindex=years_to_display,
                     **builder.settings.get_settings(local_key)
                 )
-        elif data_option == "Totals":
+        elif data_option == "Only Total":
+            builder.data_viewer.lineplot(
+                df = data['totals'],
+                month_reindex = month_redef if builder.settings.common['data']['x_column_ind'] == 0 else None, 
+                year_reindex=years_to_display,
+                **builder.settings.get_settings(local_key)
+            )
+        elif data_option == "Standard":
             builder.data_viewer.lineplot(
                 df = data['aggregated'],
                 month_reindex = month_redef if builder.settings.common['data']['x_column_ind'] == 0 else None, 
@@ -240,7 +274,7 @@ def main(config_fp: str, user_utils: types.ModuleType = None):
                 **builder.settings.get_settings(local_key)
             )
     # Bar Plot IF data option is aggregated
-    elif data_option == "Aggregated":
+    elif data_option == "Year Aggregate":
         print(data['total_by_instance'].columns)
         st.subheader('Bar Plot Visualization')
         builder.data_viewer.barplot(

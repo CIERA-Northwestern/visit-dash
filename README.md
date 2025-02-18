@@ -1,9 +1,6 @@
 # CIERA Event Dashboard
 Adapted from CIERA press/root dashboard by zhafen
 
-
-[![Installation and Tests](https://github.com/CIERA-Northwestern/press-dash/actions/workflows/installation_and_tests.yml/badge.svg)](https://github.com/CIERA-Northwestern/press-dash/actions/workflows/installation_and_tests.yml)
-
 This dashboard provides a way for interested individuals to explore data regarding press and news related to CIERA.
 
 Instructions are provided below for various levels of usage.
@@ -22,7 +19,7 @@ On the other end of things, if you are comfortable with routine use of git, code
 ## Level 0: Using the Dashboard Online
 
 The dashboard has a plethora of features that can be interacted with via a web interface.
-If the dashboard is currently live at [ciera-visits](https://visit-dash.streamlit.app), you can use the dashboard without any additional effort.
+If the dashboard is currently live at [ciera-visits]([https://visit-dash-mp7vh6gaz6abhpwanquwo3.streamlit.app/]), you can use the dashboard without any additional effort.
 One of the main features is the application of filters and the ability to download the edited data and images.
 While the interface should be relatively intuitive, a helpful tip is that you can reset your choices by refreshing the page.
 
@@ -33,13 +30,13 @@ This is possible for dashboards where the computations are sufficiently light to
 
 ### Editing the Config
 
-Some options are only available in the `config.yml` file found in the `src` directory (`./src/config.yml` if you are in the root directory, i.e. [here](https://github.com/CIERA-Northwestern/press-dash/blob/main/src/config.yml)).
+Some options are only available in the `config.yml` file found in the `src` directory (`./src/config.yml` if you are in the root directory, i.e. [here](https://github.com/CIERA-Northwestern/visit-dash/blob/main/src/config.yml)).
 You can edit this on github by clicking on the edit button in the upper right, provided you are logged in with an account that has the necessary permissions.
 Locally this can be edited with TextEdit (mac), Notepad (Windows), or your favorite code editor.
 
 ### Updating the Data
 
-The raw data lives in [the `data/raw_data` folder](https://github.com/CIERA-Northwestern/press-dash/tree/main/data/raw_data).
+The raw data lives in [the `data/raw_data` folder](https://github.com/CIERA-Northwestern/visit-dash/tree/main/data/raw_data).
 To update the data used, add and/or replace the data in this folder.
 You can do this on github by clicking the "Add file" button in the upper right hand corner.
 The pipeline will automatically select the most recent data.
@@ -53,7 +50,7 @@ If you need a private dashboard or you need to run more-intensive data processin
 The code lives in a git repository, but you don't have to know git to retrieve and use it.
 The process for downloading the code is as follows:
 
-1. Click on the green "Code" button on [the GitHub repository](https://github.com/CIERA-Northwestern/press-dash), near the top of the page.
+1. Click on the green "Code" button on [the GitHub repository](https://github.com/CIERA-Northwestern/visit-dash), near the top of the page.
 2. Select "Download ZIP."
 3. Extract the downloaded ZIP file.
 4. Optional: Move the extracted folder (`press-dash`; referred to as the code's "root directory") to a more-permanent location.
@@ -107,7 +104,7 @@ There are many good tutorials available (e.g.
 [Git Basics](https://git-scm.com/book/en/v2/Getting-Started-Git-Basics)).
 For convenience, the main command you need to download the code with git is
 ```
-git clone git@github.com:CIERA-Northwestern/press-dash.git`
+git clone git@github.com:CIERA-Northwestern/visit-dash.git`
 ```
 
 ### If you edit anything, edit `<short name>_dash_lib/user_utils.py`
@@ -139,7 +136,7 @@ This enables editing the streamlit script to be almost exactly like an ordinary 
 If you know how to make plots in Python, then you know how to make interactive plots with Streamlit.
 
 If you want to change the Streamlit dashboard, edit `src/dashboard.py`.
-Much of the Streamlit functionality is also encapsulated in utility functions inside the `press_dash_lib/` directory, particularly in `press_dash_lib/streamlit_utils.py`.
+Much of the Streamlit functionality is also encapsulated in utility functions inside the `press_dash_lib/` directory, particularly in `visit_dash_lib/streamlit_utils.py`.
 Streamlit speeds up calculations by caching calls to functions.
 If a particular combination of arguments has been passed to the function
 (and the function is wrapped in the decorator `st.cache_data` or `st.cache_resource`)
@@ -150,56 +147,6 @@ then the results are stored in memory for easy access if the same arguments are 
 Before making significant edits it is recommended you make your own fork of the dashboard repository,
 and make your own edits as a branch.
 This will enable you to share your edits as a pull request.
-
-### Repository Structure
-The repository is structured as follows:
-```
-press-dash/
-│
-├── README.md                   # Documentation for the project
-├── __init__.py
-├── src                         # Source code directory
-│   ├── __init__.py
-|   ├── config.yml              # Configuration file for the dashboard
-│   ├── dashboard.py            # Script for interactive dashboard
-│   ├── pipeline.sh             # Shell script for running data pipeline
-│   └── transform.ipynb         # Jupyter notebook for data transformation
-├── root_dash_lib               # Custom library directory
-│   ├── __init__.py
-│   ├── user_utils.py           # Utilities specific to the dashboard. Must be edited.
-│   ├── dash_utils.py           # Utilities for creating widgets and accepting input.
-│   ├── data_utils.py           # Utilities for general-purpose data handling
-│   ├── plot_utils.py           # Utilities for plotting data.
-│   ├── time_series_utils.py    # Utilities for working with time series.
-│   └── pages                   # Dashboard page templates.
-│       ├── __init__.py
-│       ├── base_page.py       # The default dashboard setup. High flexibility.
-│       └── panels_page.py      # A multi-panel dashboard example.
-├── setup.py                    # Script for packaging the project
-├── requirements.txt            # List of project dependencies
-├── data                        # Data storage directory
-│   ├── raw_data                # Raw data directory
-│   └── processed_data          # Processed data directory
-├── test                       # Test directory
-│   ├── __init__.py
-|   ├── config.yml              # Configuration file for the tests.
-│   ├── test_pipeline.py        # Unit tests for data pipeline
-│   ├── test_streamlit.py       # Unit tests for the dashboard
-│   └── lib_for_tests           # Used to load the default test dataset,
-│       ├── __init__.py         # enabling users to change the code and check
-│       └── press_data_utils.py     # if their changes broke any functionality.
-├── conftest.py                 # Configuration for test suite
-└── test_data                   # Test datasets
-```
-
-### The Test Suite
-
-The dashboard comes with a suite of code tests that help ensure base functionality.
-It is recommended you run these tests both before and after editing the code.
-To run the tests, simply navigate to the code's root directory and enter
-```
-pytest
-```
 
 ### Updating the Usage and Installation Instructions
 

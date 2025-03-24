@@ -1,4 +1,4 @@
-# CIERA Event Dashboard
+# CIERA Visits Dashboard
 Adapted from CIERA press/root dashboard by zhafen
 
 This dashboard provides a way for interested individuals to explore data regarding press and news related to CIERA.
